@@ -167,6 +167,7 @@ public extension SanityClient.Query where T: Decodable {
     ///     }
     /// }
     /// ```
+    @available(*, renamed: "fetch()")
     func fetch(completion: @escaping ResultCallback<DataResponse<T>>) {
         let urlRequest = apiURL.fetch(query: query, params: params, config: config).urlRequest
 
@@ -197,6 +198,15 @@ public extension SanityClient.Query where T: Decodable {
 
         task.resume()
     }
+
+    func fetch() async throws -> SanityClient.Query<T>.DataResponse<T> {
+        return try await withCheckedThrowingContinuation { continuation in
+            fetch() { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+    
 }
 
 public extension SanityClient.Query {
@@ -271,6 +281,7 @@ public extension SanityClient.Query {
     ///     }
     /// }
     /// ```
+    @available(*, renamed: "fetch()")
     func fetch(completion: @escaping ResultDataCallback) {
         let urlRequest = apiURL.fetch(query: query, params: params, config: config).urlRequest
 
@@ -289,4 +300,13 @@ public extension SanityClient.Query {
 
         task.resume()
     }
+
+    func fetch() async throws -> Data {
+        return try await withCheckedThrowingContinuation { continuation in
+            fetch() { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+    
 }
