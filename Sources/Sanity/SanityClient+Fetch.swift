@@ -199,7 +199,7 @@ public extension SanityClient.Query where T: Decodable {
         task.resume()
     }
 
-    func fetch() async throws -> SanityClient.Query<T>.DataResponse<T> {
+    func fetch() async throws -> DataResponse<T> {
         return try await withCheckedThrowingContinuation { continuation in
             fetch() { result in
                 continuation.resume(with: result)
