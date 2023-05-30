@@ -3,6 +3,9 @@
 // Copyright (c) 2021 Sanity.io
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 // Based on https://github.com/sanity-io/client/blob/31ecabdc523b4543083ee03300c18557528d6961/src/data/dataMethods.js#L37
 let kQuerySizeLimitPost = 11264
