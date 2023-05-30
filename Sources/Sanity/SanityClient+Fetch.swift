@@ -2,7 +2,6 @@
 //
 // Copyright (c) 2021 Sanity.io
 
-import Combine
 import Foundation
 
 public extension SanityClient.Query where T: Decodable {
@@ -113,47 +112,6 @@ public extension SanityClient.Query where T: Decodable {
         }
     }
 
-    /// Creates a Publisher that queries the Sanity Content Lake API, and emits `T` on a successful query and Error on failed queries
-    ///
-    /// # Example #
-    /// ```
-    /// client.query([String].self, query: groqQuery).fetch()
-    /// .receive(on: DispatchQueue.main)
-    /// .sink(receiveCompletion: { completion in
-    ///     switch completion {
-    ///         case .finished:
-    ///         break
-    ///     case let .failure(error):
-    ///         self.error = error
-    ///     }
-    /// }, receiveValue: { response in
-    ///     self.resultString = response.result
-    ///     self.ms = response.ms
-    ///     self.queryString = response.query
-    /// })
-    /// ```
-    func fetch() -> AnyPublisher<DataResponse<T>, Error> {
-        let urlRequest = apiURL.fetch(query: query, params: params, config: config).urlRequest
-
-        return urlSession.dataTaskPublisher(for: urlRequest).tryMap { data, response -> JSONDecoder.Input in
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw URLError(.badServerResponse)
-            }
-
-            switch httpResponse.statusCode {
-            case 200 ..< 300:
-                return data
-            case 400 ..< 500:
-                let errorResponse = try JSONDecoder().decode(ErrorResponse.self, from: data)
-                throw errorResponse
-            default:
-                throw URLError(.badServerResponse)
-            }
-        }
-        .decode(type: DataResponse<T>.self, decoder: JSONDecoder())
-        .eraseToAnyPublisher()
-    }
-
     /// Creates a fetch that retrieves the queries the Sanity Content Lake API, and calls a handler upon completion.
     ///
     /// # Example #
@@ -226,43 +184,6 @@ public extension SanityClient.Query {
         public var errorDescription: String? {
             "HTTP Error \(self.statusCode)"
         }
-    }
-
-    /// Creates a Publisher that queries the Sanity Content Lake API, and emits  Data value type  on a successful query and Error on failed queries
-    ///
-    /// # Example #
-    /// ```
-    /// client.query(query: groqQuery).fetch()
-    /// .receive(on: DispatchQueue.main)
-    /// .sink(receiveCompletion: { completion in
-    ///     switch completion {
-    ///         case .finished:
-    ///         break
-    ///     case let .failure(error):
-    ///         self.error = error
-    ///     }
-    /// }, receiveValue: { data in
-    ///     self.data = data
-    /// })
-    /// ```
-    func fetch() -> AnyPublisher<Data, Error> {
-        let urlRequest = apiURL.fetch(query: query, params: params, config: config).urlRequest
-
-        return urlSession.dataTaskPublisher(for: urlRequest).tryMap { data, response in
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw URLError(.badServerResponse)
-            }
-
-            switch httpResponse.statusCode {
-            case 200 ..< 300:
-                return data
-            case 400 ..< 500:
-                throw HTTPUserError(data: data, statusCode: httpResponse.statusCode)
-            default:
-                throw HTTPServerError(data: data, statusCode: httpResponse.statusCode)
-            }
-        }
-        .eraseToAnyPublisher()
     }
 
     typealias ResultDataCallback = (Result<Data, Error>) -> Void
