@@ -3,6 +3,9 @@
 // Copyright (c) 2021 Sanity.io
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 public extension SanityClient.Query where T: Decodable {
     typealias ResultCallback<Value> = (Result<Value, Error>) -> Void
